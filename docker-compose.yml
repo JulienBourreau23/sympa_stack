@@ -1,7 +1,8 @@
+version: "3.9"
+
 services:
   db:
-    image: postgres:16-alpine
-    container_name: pg_sympa
+    image: postgres:18.0-alpine3.22
     restart: unless-stopped
     environment:
       POSTGRES_DB: sympa
@@ -9,9 +10,6 @@ services:
       POSTGRES_PASSWORD: sympa
     volumes:
       - pg_data:/var/lib/postgresql/data
-    networks:
-      msg_share_bridge:
-        ipv4_address: 172.0.10.20
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB -h 127.0.0.1"]
       interval: 5s
@@ -22,41 +20,25 @@ services:
     build:
       context: ./sympa
       dockerfile: Dockerfile
-    container_name: sympa
     restart: unless-stopped
     depends_on:
       db:
         condition: service_healthy
     environment:
-      # Utilisés par l'entrypoint pour générer la conf DB de Sympa
       DB_HOST: db
       DB_PORT: "5432"
       DB_NAME: sympa
       DB_USER: sympa
       DB_PASSWORD: sympa
-    # Expose le HTTP si tu mets Apache/Nginx dans l'image Sympa
     ports:
       - "8080:80"
     volumes:
-      # À persister selon ton besoin Sympa
       - sympa_etc:/etc/sympa
       - sympa_var:/var/lib/sympa
       - sympa_spool:/var/spool/sympa
-    networks:
-      msg_share_bridge:
-        ipv4_address: 172.0.10.30
 
 volumes:
   pg_data: {}
   sympa_etc: {}
   sympa_var: {}
   sympa_spool: {}
-
-networks:
-  msg_share_bridge:
-    name: msg_share_bridge
-    driver: bridge
-    ipam:
-      config:
-        - subnet: "172.0.10.0/24"
-          gateway: "172.0.10.1"
