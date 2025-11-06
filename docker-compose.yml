@@ -18,7 +18,7 @@ services:
 
   sympa:
     build:
-      context: ./sympa
+      context: .
       dockerfile: Dockerfile
     restart: unless-stopped
     depends_on:
