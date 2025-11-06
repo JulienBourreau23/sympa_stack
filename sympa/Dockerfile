@@ -4,8 +4,8 @@ FROM debian:13.1
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Paquets de base + Sympa + client PG (pour tests/health)
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
+RUN apt update && \
+    apt install -y --no-install-recommends \
       ca-certificates curl gnupg gettext-base \
       postgresql-client \
       # Paquets Sympa (les noms peuvent varier selon la release)
