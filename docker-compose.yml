@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   db:
-    image: postgres:18.0-alpine3.22
+    image: postgres:18.0-alpine3.22   # ton exigence PG18
     restart: unless-stopped
     environment:
       POSTGRES_DB: sympa
@@ -18,18 +18,20 @@ services:
 
   sympa:
     build:
-      context: .
+      context: .              # Dockerfile à la racine du repo
       dockerfile: Dockerfile
     restart: unless-stopped
     depends_on:
       db:
-        condition: service_healthy
+        condition: service_healthy   # ← n’essaie pas d’installer Sympa tant que PG n’est pas prêt
     environment:
       DB_HOST: db
       DB_PORT: "5432"
       DB_NAME: sympa
       DB_USER: sympa
       DB_PASSWORD: sympa
+      SYMPA_DOMAIN: "listes.tondomaine.tld"
+      SYMPA_LISTMASTER: "postmaster@tondomaine.tld"
     ports:
       - "8080:80"
     volumes:
