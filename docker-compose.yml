@@ -30,8 +30,9 @@ services:
       DB_NAME: sympa
       DB_USER: sympa
       DB_PASSWORD: sympa
-      SYMPA_DOMAIN: "listes.tondomaine.tld"
+      SYMPA_DOMAIN: "localhost"
       SYMPA_LISTMASTER: "postmaster@tondomaine.tld"
+      SYMPA_HTTP_PORT: "8080"
     ports:
       - "8080:80"
     volumes:
