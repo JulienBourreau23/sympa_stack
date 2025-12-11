@@ -2,23 +2,53 @@ server {
     listen 80 default_server;
     server_name _;
 
-    root /var/lib/sympa/static_content;
+    # Pas vraiment utilisé, vu que "/" retourne 404,
+    # mais autant le pointer vers les fichiers statiques fournis par Sympa.
+    root /usr/share/sympa/static_content;
 
+    # On ne sert rien sur la racine directement
     location / {
         return 404;
     }
 
+    # Pas d’accès aux fichiers cachés
     location ~ /\. {
         return 403;
     }
 
+    # Interface web Sympa
     location /sympa {
         include fastcgi_sympa;
     }
 
+    # Alias /lists vers la même interface (optionnel mais pratique)
     location /lists {
         include fastcgi_sympa;
     }
+
+    ########################################################
+    #  Static officiel Sympa (à faire correspondre avec :
+    #  css_url, pictures_url, static_content_url dans sympa.conf)
+    ########################################################
+
+    # CSS générées automatiquement
+    location /static-sympa/css/ {
+        alias /var/lib/sympa/css/;
+    }
+
+    # Photos / avatars des abonnés
+    location /static-sympa/pictures/ {
+        alias /var/lib/sympa/pictures/;
+    }
+
+    # Autres fichiers statiques (fonts, JS, images…)
+    location /static-sympa/ {
+        alias /usr/share/sympa/static_content/;
+    }
+
+    ########################################################
+    #  Alias de compatibilité (utilisés par certains setups)
+    ########################################################
 
     location /sympa-static/ {
         alias /usr/share/sympa/static_content/;
