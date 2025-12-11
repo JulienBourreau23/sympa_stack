@@ -1,47 +1,40 @@
-version: "3.9"
-
 services:
-  db:
-    image: postgres:18.0-alpine3.22   # ton exigence PG18
-    restart: unless-stopped
+  pgsql:
+    image: postgres:18.0-alpine3.22
+    container_name: sympa-pgsql
     environment:
-      POSTGRES_DB: sympa
-      POSTGRES_USER: sympa
-      POSTGRES_PASSWORD: sympa
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
     volumes:
       - pg_data:/var/lib/postgresql/data
+      - ./db-init:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB -h 127.0.0.1"]
+      test: ["CMD-SHELL", "pg_isready -U sympa -d sympa || exit 1"]
       interval: 5s
-      timeout: 3s
+      timeout: 5s
       retries: 20
 
   sympa:
     build:
-      context: .              # Dockerfile à la racine du repo
-      dockerfile: Dockerfile
-    restart: unless-stopped
+      context: .
+      dockerfile: latest.dockerfile   # on utilise SON Dockerfile, en local
+    container_name: sympa-app
     depends_on:
-      db:
-        condition: service_healthy   # ← n’essaie pas d’installer Sympa tant que PG n’est pas prêt
-    environment:
-      DB_HOST: db
-      DB_PORT: "5432"
-      DB_NAME: sympa
-      DB_USER: sympa
-      DB_PASSWORD: sympa
-      SYMPA_DOMAIN: "localhost"
-      SYMPA_LISTMASTER: "postmaster@tondomaine.tld"
-      SYMPA_HTTP_PORT: "8080"
+      pgsql:
+        condition: service_healthy
     ports:
       - "8080:80"
     volumes:
-      - sympa_etc:/etc/sympa
-      - sympa_var:/var/lib/sympa
+      # config sympa
+      - ./sympa.conf:/etc/sympa/sympa/sympa.conf
+      # volumes de données
       - sympa_spool:/var/spool/sympa
+      - sympa_data:/var/lib/sympa
+      - sympa_shared:/etc/sympa/shared
 
 volumes:
-  pg_data: {}
-  sympa_etc: {}
-  sympa_var: {}
-  sympa_spool: {}
+  pg_data:
+  sympa_spool:
+  sympa_data:
+  sympa_shared:

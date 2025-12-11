@@ -1,0 +1,11 @@
+--- /usr/share/sympa/lib/Sympa/WWW/SOAP/Transport.pm.orig	2023-07-14 15:17:11.663046982 +0000
++++ /usr/share/sympa/lib/Sympa/WWW/SOAP/Transport.pm	2023-07-14 15:17:42.811291184 +0000
+@@ -98,7 +98,7 @@
+         if (defined $ENV{'SESSION_ID'}) {
+             my $cookie =
+                 Sympa::WWW::Session::soap_cookie2($ENV{'SESSION_ID'},
+-                $ENV{'SERVER_NAME'}, $self->{_ss_cookie_expire});
++                $options{cookie_domain}, $self->{_ss_cookie_expire});
+             $response->headers->push_header('Set-Cookie2' => $cookie);
+         }
+     }

@@ -1,0 +1,15 @@
+-- Création du rôle et de la base Sympa pour PostgreSQL 18
+
+CREATE ROLE sympa
+  LOGIN
+  ENCRYPTED PASSWORD 'sympa'
+  NOSUPERUSER
+  NOCREATEDB
+  NOCREATEROLE
+  NOINHERIT;
+
+CREATE DATABASE sympa
+  OWNER sympa
+  ENCODING 'UTF8';
+
+GRANT ALL PRIVILEGES ON DATABASE sympa TO sympa;

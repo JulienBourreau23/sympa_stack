@@ -1,0 +1,8 @@
+#!/bin/bash -e
+
+trap 'echo "ERROR: $BASH_SOURCE:$LINENO $BASH_COMMAND" >&2' ERR
+
+# Sleep so that main Sympa process can start and prepare everything.
+sleep 10
+
+exec chpst -u sympa:sympa /usr/lib/sympa/bin/task_manager.pl --foreground

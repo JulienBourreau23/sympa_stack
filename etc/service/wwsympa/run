@@ -1,0 +1,38 @@
+#!/bin/bash -e
+
+trap 'echo "ERROR: $BASH_SOURCE:$LINENO $BASH_COMMAND" >&2' ERR
+
+chown -Rh :sympa /etc/sympa/*
+chown -Rh sympa:sympa /var/lib/sympa /var/spool/sympa
+chmod 771 /var/spool/sympa
+
+mkdir -p /run/sympa
+chown sympa:sympa /run/sympa
+
+# If directory is empty, we restore it from our copy of initial files.
+[[ $(ls -A /var/lib/sympa | grep -v placeholder) ]] || cp -a /var/lib/sympa.orig/* /var/lib/sympa/
+[[ $(ls -A /var/spool/sympa | grep -v placeholder) ]] || cp -a /var/spool/sympa.orig/* /var/spool/sympa/
+
+chpst -u sympa:sympa /usr/lib/sympa/bin/sympa.pl --health_check
+
+# So that Postfix can connect into us to deliver e-mail to mailing lists. /etc/sympa/shared is a
+# volume shared with the Postfix container which contains the SSH key that container should use
+# when connecting to this container.
+if [ -e /etc/sympa/shared ]; then
+  # If SSH keys do not exist, create them.
+  if [ ! -e /etc/sympa/shared/id_rsa ]; then
+    ssh-keygen -t rsa -f /etc/sympa/shared/id_rsa -N '' >/dev/null
+  fi
+
+  rm -f /etc/sympa/shared/known_hosts
+  echo -n 'sympa ' > /etc/sympa/shared/known_hosts
+  cat /etc/ssh/ssh_host_rsa_key.pub >> /etc/sympa/shared/known_hosts
+
+  mkdir -p /var/lib/sympa/.ssh
+  echo -n 'no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty,command="/etc/sympa/run.sh" ' > /var/lib/sympa/.ssh/authorized_keys
+  cat /etc/sympa/shared/id_rsa.pub >> /var/lib/sympa/.ssh/authorized_keys
+fi
+
+export FCGI_SOCKET_PATH="127.0.0.1:9000"
+
+exec chpst -u sympa:sympa /usr/lib/cgi-bin/sympa/wwsympa.fcgi
