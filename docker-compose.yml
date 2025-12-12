@@ -15,6 +15,12 @@ services:
       timeout: 5s
       retries: 20
 
+
+  mailhog:
+    image: mailhog/mailhog
+    container_name: sympa-mailhog
+    ports:
+      - "8025:8025"
   sympa:
     build:
       context: .
@@ -29,9 +35,11 @@ services:
       # config sympa
       - ./sympa.conf:/etc/sympa/sympa/sympa.conf
       # volumes de données
+      - ./nullmailer/remotes:/etc/nullmailer/remotes:ro
       - sympa_spool:/var/spool/sympa
       - sympa_data:/var/lib/sympa
       - sympa_shared:/etc/sympa/shared
+
 
 volumes:
   pg_data:
