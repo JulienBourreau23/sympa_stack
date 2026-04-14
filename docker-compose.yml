@@ -30,7 +30,7 @@ services:
       pgsql:
         condition: service_healthy
     ports:
-      - "8080:80"
+      - "8023:80"
     volumes:
       # config sympa
       - ./sympa.conf:/etc/sympa/sympa/sympa.conf
