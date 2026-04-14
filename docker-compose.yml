@@ -24,7 +24,6 @@ services:
   sympa:
     build:
       context: .
-      dockerfile: latest.dockerfile   # on utilise SON Dockerfile, en local
     container_name: sympa-app
     depends_on:
       pgsql:
